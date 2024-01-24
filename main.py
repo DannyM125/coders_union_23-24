@@ -1,10 +1,26 @@
+try: 
+    from pyfirmata import ArduinoNano, util, STRING_DATA
+except:
+    import pip
+    pip.main(['install', 'pyfirmata'])
+    from pyfirmata import ArduinoNano, util, STRING_DATA
+
 import pygame
 import random
 import math
 import sys
-import time
+from time import sleep
 
 pygame.init()  # SHOULD ALWAYS BE IN YOUR CODE
+
+port = 'COM3' #change to whatever this is - connect to computer and check through Arduino IDE
+board = ArduinoNano(port)
+pin_9 = board.get_pin('d:9:o')
+pin_10 = board.get_pin('d:10:o')
+
+iterator = util.Iterator(board)
+iterator.start()
+
 # creates screen with pixel size
 screen = pygame.display.set_mode((800, 600))
 
@@ -91,10 +107,23 @@ def show_score(x, y):
     # remeber to convert to string   (typecasting)
     score = font.render("Score : " + str(score_value), True, (255, 255, 255))
     screen.blit(score, (x, y))
+    board.send_sysex(STRING_DATA, util.str_to_two_byte_iter('Score:' + str(score)))
 # game over
 
 
 def game_over_text():
+
+    while true:
+        board.pin_9.write(1)
+        board.pin_10.write(0)
+    #check which of these methods work
+        board.digital[pin_9].write(1)
+        board.digital[pin_9].write(0)
+
+        sleep(5)
+        break
+    board.send_sysex(STRING_DATA, util.str_to_two_byte_iter('You lost'))
+    
     over_text = over_font.render("GAME OVER", True, (255, 255, 255))
     screen.blit(over_text, (200, 250))
 
